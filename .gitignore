@@ -1,0 +1,18 @@
+# AI 生成的临时输出
+outputs/*
+!outputs/.gitkeep
+
+# 迭代过程中的草稿
+iterations/*
+!iterations/.gitkeep
+
+# 参考资料（可自行维护）
+references/*
+!references/.gitkeep
+
+# 编辑器/系统文件
+.DS_Store
+.vscode/
+.idea/
+*.swp
+Thumbs.db
