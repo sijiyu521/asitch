@@ -1,0 +1,14 @@
+{
+  "name": "asitch-minimal-web",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "serve dist -s"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "serve": "^14.2.0"
+  }
+}
