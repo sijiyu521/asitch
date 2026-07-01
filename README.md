@@ -1,118 +1,185 @@
-# Asitch — 轻量 2D 游戏引擎
+# Asitch — 轻量 2D 游戏引擎（Node 构建指南）
 
-> 一个轻量级、易上手的 2D 游戏引擎模板与工具集，旨在帮助开发者快速搭建原型、制作小游戏并沉淀常用的引擎结构与提示模板。
+> 本说明将 README 聚焦为 Node.js 环境下的构建与运行指南；如果你的项目使用 Electron、Webpack、Vite 或其它工具，我也可以把说明细化到对应工具。
 
-简短说明：本仓库提供引擎核心（渲染、场景管理、输入、资源管理、碰撞与音频等子系统）的参考实现，并包含示例与模版，方便在教学、原型或小型项目中复用。
-
----
-
-## 主要特性
-
-- 2D 渲染管线（Sprite、图层、摄像机）
-- 场景/实体管理（简单的实体组件或面向对象场景结构）
-- 输入系统（键盘、鼠标、触摸）
-- 资源管理（纹理、音效、字体等）
-- 基本物理/碰撞支持（AABB 或简单碰撞检测）
-- 可扩展的模块化代码结构，便于二次开发与教学
-- 示例/模版：包含至少一个最小可运行示例（示例目录请查看 examples/）
+简短说明：Asitch 是一个轻量级 2D 游戏引擎模板，适合在浏览器或基于 Node 的打包工具下进行开发与原型制作。下面给出 Node（npm/yarn）为主的安装、构建与运行步骤，以及最小示例和推荐的 package.json 脚本。
 
 ---
 
-## 快速开始（概览）
+## 前置要求
 
-> 注意：仓库中可能使用不同的语言/构建系统（例如 C++/CMake、Rust/Cargo、JavaScript/Node、Python 等）。下面为通用指引；如果你希望我把 README 写成针对具体语言的构建命令（例如 `cmake` 或 `cargo`、`npm`），请回复告诉我使用的语言或提供关键构建文件（如 CMakeLists.txt、package.json 等）。
-
-1. 克隆仓库：
-
-   git clone https://github.com/sijiyu521/asitch.git
-
-2. 进入项目目录并查看 README、examples 与 docs：
-
-   cd asitch
-   ls
-
-3. 构建并运行示例：
-
-   - 若仓库包含 `examples/` 目录，打开该目录查看最小示例，按示例中的说明构建与运行。
-   - 如果项目使用常见构建系统（CMake、Cargo、npm），请运行相应命令（例如：`cmake && make`、`cargo run`、`npm start`）。
-
-4. 编辑示例：尝试修改 `examples/` 中的简单场景或资源，观察运行效果以熟悉引擎流程。
+- Node.js（建议 16+ 或 LTS 版本）
+- npm（随 Node 一起安装）或 yarn
+- 建议安装全局静态服务器（可选）：`npm i -g serve`（用于本地预览 build 输出）
 
 ---
 
-## 快速 API 示例（伪代码）
+## 安装（第一次）
 
-下面示例为一个最小流程示意，展示如何使用引擎创建窗口、加载纹理并显示精灵（请将其替换为仓库实际 API）：
+在仓库根目录运行：
 
-```cpp
-// 示例：伪代码（根据实际实现替换）
-int main() {
-  Engine engine("MyGame", 800, 600);
-  Scene* scene = engine.CreateScene();
+```bash
+git clone https://github.com/sijiyu521/asitch.git
+cd asitch
+npm install
+# 或使用 yarn
+# yarn install
+```
 
-  auto sprite = scene->CreateSprite("assets/player.png");
-  sprite->SetPosition(100, 200);
+如果仓库在 examples/ 或子包中包含独立示例，请进入对应子目录并安装依赖：
 
-  while (engine.Running()) {
-    engine.PollEvents();
-    engine.Update(1.0f/60.0f);
-    engine.Render();
+```bash
+cd examples/minimal-web
+npm install
+```
+
+---
+
+## 常用 npm 脚本（推荐）
+
+下面是推荐放入 `package.json` 的 scripts，README 中会使用这些脚本示例：
+
+```json
+{
+  "scripts": {
+    "dev": "vite",            // 开发模式（热重载）
+    "build": "vite build",    // 打包为静态文件
+    "start": "serve dist -s"  // 预览打包后的静态站点（需全局 serve 或替换为任意静态服务器）
   }
-
-  return 0;
 }
 ```
 
+说明：这里以 Vite 举例（简单易用），你也可以改为 webpack/parcel 或自定义构建流程。
+
 ---
 
-## 项目结构（推荐）
+## 快速运行（开发模式）
 
-以下为本仓库推荐/示例结构（实际结构请以仓库目录为准）：
+推荐开发流程（使用 Vite 示例）：
 
+1. 安装开发依赖（只需一次）：
+
+   npm install --save-dev vite
+
+2. 在 package.json 中添加 `dev` 脚本后，启动开发服务器：
+
+   npm run dev
+
+3. 浏览器打开 http://localhost:5173（默认）即可查看示例。
+
+---
+
+## 打包与预览（生产构建）
+
+1. 运行构建：
+
+   npm run build
+
+2. 使用静态服务器预览：
+
+   npm run start
+
+（或 `npx serve dist -s`，或把 dist 部署到任意静态主机）
+
+---
+
+## 最小可运行示例（浏览器端）
+
+下面给出一个极简的示例结构和关键文件，适合放在 `examples/minimal-web/`：
+
+- examples/minimal-web/index.html
+- examples/minimal-web/main.js
+- examples/minimal-web/package.json
+
+index.html：
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asitch - Minimal</title>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
 ```
-asitch/
-├── docs/               # 文档与设计说明
-├── examples/           # 最小可运行示例
-├── src/                # 引擎源代码（渲染、输入、场景、资源等）
-├── assets/             # 示例资源（图像、音频、字体）
-├── tests/              # 单元测试或集成测试
-├── scripts/            # 构建、打包或工具脚本
-└── README.md           # 本文件
+
+main.js（伪代码，替换为实际引擎 API）：
+
+```js
+import { Engine, Scene, Sprite } from '../src/engine.js' // 若是打包模块，请改为正确路径
+
+const canvas = document.getElementById('gameCanvas')
+const engine = new Engine({ canvas })
+const scene = new Scene()
+
+// 加载资源（假设引擎提供 loadTexture）
+engine.assets.loadTexture('player', '/assets/player.png').then(() => {
+  const sprite = new Sprite('player')
+  sprite.setPosition(100, 200)
+  scene.add(sprite)
+
+  engine.run(scene)
+})
+```
+
+示例 package.json（minimal-web）:
+
+```json
+{
+  "name": "asitch-minimal-web",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "serve dist -s"
+  },
+  "dependencies": {}
+}
+```
+
+将示例放到 `examples/minimal-web/` 后：
+
+```bash
+cd examples/minimal-web
+npm install
+npm run dev
+# 在浏览器打开 http://localhost:5173
 ```
 
 ---
 
-## 开发与贡献
+## 运行示例（如果仓库已包含 examples/）
 
-欢迎贡献！常见贡献方式：
+如果仓库自带 `examples/` 目录，请按每个示例目录下的 README 或 package.json 脚本执行。常见命令：
 
-- 提交 issue 报告 bug 或提出功能建议（请包含复现步骤和预期行为）。
-- 提交 PR：描述修改目的、涉及文件与简单使用示例或对比（修改前/修改后）。
-- 若提交资源或示例，请确保不包含受版权约束的素材或敏感信息。
-
-贡献流程建议：
-1. Fork 仓库并在分支上开发。  
-2. 在 PR 描述中包含运行说明与示例。  
-3. 通过 CI 或手动测试示例能正常运行后请求合并。
+```bash
+cd examples/<example-name>
+npm install
+npm run dev      # 或 npm run start
+```
 
 ---
 
-## 文档与示例扩展建议（我可以帮你做）
+## 开发建议
 
-- 把 README 顶部添加徽章（构建状态、License、语言、最新版本）。
-- 根据项目语言生成完整的安装/构建命令（例如 CMake/Cargo/npm 等）。
-- 在 examples/ 添加“第一个 5 分钟上手”指南并贴出运行截图或 GIF。  
-- 为常用模块（渲染、资源、场景、输入）分别写简短 API 文档页。
-
-如果你告诉我本引擎使用的编程语言和构建工具（或者把项目中关键文件分享给我，例如 CMakeLists.txt、Cargo.toml、package.json、requirements.txt），我会把 README 补充具体的构建命令与示例步骤并再次提交。
+- 推荐使用 ES 模块（type: "module"）并使用 Vite/Parcel/webpack 打包，方便热重载与现代语法支持。  
+- 示例资源请放在 `assets/` 或 `examples/<name>/assets/` 下，并在开发服务器中通过相对路径加载。  
+- 把常用工具脚本（如构建、资源压缩、纹理图集打包）放到 `scripts/`，并在 README 中给出使用示例。
 
 ---
 
-## 许可证 & 作者
+## 贡献 & 许可证
 
-版权归仓库作者所有。请在提交内容中避免包含机密或个人敏感信息。  
+如需我把 README 更新为中英双语、添加徽章（CI、License、npm version）、或生成 `examples/minimal-web/` 的完整示例文件（包含 sprites 和 package.json），我可以直接在仓库中创建这些文件并提交（或者在新分支上发 PR）。请告诉我你希望我现在做的下一步：
+
+- A: 直接在主分支创建 `examples/minimal-web/` 完整示例并提交
+- B: 在新分支创建示例并发起 PR
+- C: 只在 README 中保留构建说明（已完成）
+
 作者: sijiyu521
-
----
-
-需要我现在把 README 具体化（添加构建步骤或示例）到可直接运行的状态吗？如果需要，请告诉我项目的语言或上传/指出构建文件路径，我会据此更新并提交。
