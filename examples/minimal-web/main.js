@@ -1,51 +1,54 @@
+import { Engine, Scene, Sprite } from '../../src/index.js';
+
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const engine = new Engine({ canvas, background: '#222' });
 
-// 简单示例：加载一个占位图并在画布上水平移动
-const player = new Image();
-player.src = '/assets/player.svg';
+const scene = new Scene();
+scene.background = '#0b0b0b';
 
-let x = 0;
-let last = performance.now();
+const player = new Sprite({
+  x: 0,
+  y: 260,
+  width: 64,
+  height: 64,
+  color: '#ffcc00',
+  tag: 'player',
+});
 
-function update(dt) {
-  x += 100 * dt; // 每秒移动 100px
-  if (x > canvas.width) x = -64;
-}
+scene.add(player);
 
-function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // 背景网格
-  ctx.fillStyle = '#0b0b0b';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+engine.assets.loadImage('player', '/examples/minimal-web/assets/player.svg')
+  .then((img) => {
+    player.setImage(img);
+  })
+  .catch(() => {
+    // fallback to color rect
+  });
 
-  // 绘制示例玩家
-  if (player.complete) {
-    ctx.drawImage(player, x, 260, 64, 64);
-  } else {
-    ctx.fillStyle = '#ffcc00';
-    ctx.fillRect(x, 260, 64, 64);
+const speed = 200;
+
+player.update = function (dt) {
+  const input = engine.input;
+
+  if (input.isKeyDown('ArrowRight') || input.isKeyDown('KeyD')) {
+    this.x += speed * dt;
+  }
+  if (input.isKeyDown('ArrowLeft') || input.isKeyDown('KeyA')) {
+    this.x -= speed * dt;
   }
 
-  // HUD
-  ctx.fillStyle = '#fff';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('Asitch minimal example — moving sprite', 10, 20);
-}
-
-function loop(now) {
-  const dt = (now - last) / 1000;
-  last = now;
-  update(dt);
-  render();
-  requestAnimationFrame(loop);
-}
-
-player.onload = () => {
-  requestAnimationFrame(loop);
+  if (this.x > canvas.width) this.x = -this.width;
+  if (this.x < -this.width) this.x = canvas.width;
 };
 
-// 若图片无法加载也启动循环
-setTimeout(() => {
-  if (!player.complete) requestAnimationFrame(loop);
-}, 200);
+const hud = {
+  update() {},
+  render(ctx) {
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Asitch engine demo — Arrow keys / A D to move', 10, 20);
+  },
+};
+scene.add(hud);
+
+engine.run(scene);
