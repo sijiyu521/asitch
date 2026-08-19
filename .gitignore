@@ -16,3 +16,8 @@ references/*
 .idea/
 *.swp
 Thumbs.db
+
+# C 构建产物
+build/
+*.o
+*.a
