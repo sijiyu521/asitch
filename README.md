@@ -1,90 +1,185 @@
-# Asitch — 轻量级 2D 游戏引擎（C / SDL2 版）
+# Asitch — 轻量 2D 游戏引擎（Node 构建指南）
 
-Asitch 是一个轻量级 2D 游戏引擎，采用 C11 编写，基于 SDL2 渲染，适合桌面端开发与原型制作。
+> 本说明将 README 聚焦为 Node.js 环境下的构建与运行指南；如果你的项目使用 Electron、Webpack、Vite 或其它工具，我也可以把说明细化到对应工具。
 
-> 本项目前身为浏览器 Canvas 版（JavaScript），已于 `dev/c-rewrite` 起重写为 C 语言。
+简短说明：Asitch 是一个轻量级 2D 游戏引擎模板，适合在浏览器或基于 Node 的打包工具下进行开发与原型制作。下面给出 Node（npm/yarn）为主的安装、构建与运行步骤，以及最小示例和推荐的 package.json 脚本。
 
 ---
 
 ## 前置要求
 
-- GCC / Clang（支持 C11）
-- GNU Make
-- SDL2 与 SDL2_image 开发库
+- Node.js（建议 16+ 或 LTS 版本）
+- npm（随 Node 一起安装）或 yarn
+- 建议安装全局静态服务器（可选）：`npm i -g serve`（用于本地预览 build 输出）
 
-Ubuntu / Debian 安装依赖：
+---
+
+## 安装（第一次）
+
+在仓库根目录运行：
 
 ```bash
-sudo apt-get install libsdl2-dev libsdl2-image-dev
+git clone https://github.com/sijiyu521/asitch.git
+cd asitch
+npm install
+# 或使用 yarn
+# yarn install
+```
+
+如果仓库在 examples/ 或子包中包含独立示例，请进入对应子目录并安装依赖：
+
+```bash
+cd examples/minimal-web
+npm install
 ```
 
 ---
 
-## 构建与运行
+## 常用 npm 脚本（推荐）
 
-```bash
-make          # 编译静态库 build/libasitch.a 和示例 build/minimal-desktop
-make run      # 运行示例
-make clean    # 清理构建产物
-```
+下面是推荐放入 `package.json` 的 scripts，README 中会使用这些脚本示例：
 
-示例操作：方向键或 A/D 移动精灵，ESC 退出。
-
----
-
-## 项目结构
-
-```
-include/asitch/   引擎公开头文件（asitch.h 为统一入口）
-src/              引擎实现
-examples/minimal-desktop/   最小桌面示例
-```
-
-## 模块一览
-
-| 模块 | 文件 | 职责 |
-| ---- | ---- | ---- |
-| Engine | `engine.h/.c` | 窗口 / 渲染器 / 主循环 / 场景切换 |
-| Scene | `scene.h/.c` | 实体容器，驱动 update / render |
-| Entity | `scene.h` | 实体基类（函数指针式虚方法） |
-| Sprite | `sprite.h/.c` | 精灵：纹理或纯色矩形、AABB 碰撞 |
-| Camera | `camera.h/.c` | 世界→屏幕变换（平移 + 缩放）、lerp 跟随 |
-| Input | `input.h/.c` | 键盘 / 鼠标状态与单帧事件 |
-| AssetManager | `assets.h/.c` | 图片（纹理）与文本资源缓存 |
-
-## 快速上手
-
-```c
-#include "asitch/asitch.h"
-
-int main(void) {
-    AsitchEngineConfig cfg = { .title = "My Game", .width = 800, .height = 600 };
-    AsitchEngine *engine = asitch_engine_create(&cfg);
-
-    AsitchScene *scene = asitch_scene_create();
-    AsitchSprite *player = asitch_sprite_create(100, 100, 64, 64,
-                                                asitch_color_rgb(0xff, 0xcc, 0x00));
-    asitch_scene_add(scene, (AsitchEntity *)player);
-
-    asitch_engine_run(engine, scene);  /* 阻塞直到退出 */
-
-    asitch_scene_destroy(scene);
-    asitch_engine_destroy(engine);
-    return 0;
+```json
+{
+  "scripts": {
+    "dev": "vite",            // 开发模式（热重载）
+    "build": "vite build",    // 打包为静态文件
+    "start": "serve dist -s"  // 预览打包后的静态站点（需全局 serve 或替换为任意静态服务器）
+  }
 }
 ```
 
-自定义实体行为：设置 `AsitchSprite.update` 函数指针（精灵），
-或自行填充 `AsitchEntity` 的 `update` / `render` / `destroy`（任意实体）。
+说明：这里以 Vite 举例（简单易用），你也可以改为 webpack/parcel 或自定义构建流程。
 
-## 与 JS 版的差异
+---
 
-- 主循环：JS 版基于 `requestAnimationFrame`，C 版为阻塞式 `asitch_engine_run`。
-- 按键标识：JS 用 `KeyboardEvent.code` 字符串，C 用 `SDL_Scancode`。
-- 图片资源：JS 可加载 SVG，C 版通过 SDL2_image 支持 PNG/JPG/BMP 等（示例素材已转为 BMP）。
-- 相机：JS 版需手动对 ctx 调用 `apply/reset`，C 版由场景把相机传给实体渲染函数自动变换。
-- 尚未移植：audio 资源加载（可接入 SDL_mixer）、JSON 解析（`load_text` 只读原文）、文字 HUD（可接入 SDL_ttf）。
+## 快速运行（开发模式）
 
-## License
+推荐开发流程（使用 Vite 示例）：
 
-MIT
+1. 安装开发依赖（只需一次）：
+
+   npm install --save-dev vite
+
+2. 在 package.json 中添加 `dev` 脚本后，启动开发服务器：
+
+   npm run dev
+
+3. 浏览器打开 http://localhost:5173（默认）即可查看示例。
+
+---
+
+## 打包与预览（生产构建）
+
+1. 运行构建：
+
+   npm run build
+
+2. 使用静态服务器预览：
+
+   npm run start
+
+（或 `npx serve dist -s`，或把 dist 部署到任意静态主机）
+
+---
+
+## 最小可运行示例（浏览器端）
+
+下面给出一个极简的示例结构和关键文件，适合放在 `examples/minimal-web/`：
+
+- examples/minimal-web/index.html
+- examples/minimal-web/main.js
+- examples/minimal-web/package.json
+
+index.html：
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asitch - Minimal</title>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
+```
+
+main.js（伪代码，替换为实际引擎 API）：
+
+```js
+import { Engine, Scene, Sprite } from '../src/engine.js' // 若是打包模块，请改为正确路径
+
+const canvas = document.getElementById('gameCanvas')
+const engine = new Engine({ canvas })
+const scene = new Scene()
+
+// 加载资源（假设引擎提供 loadTexture）
+engine.assets.loadTexture('player', '/assets/player.png').then(() => {
+  const sprite = new Sprite('player')
+  sprite.setPosition(100, 200)
+  scene.add(sprite)
+
+  engine.run(scene)
+})
+```
+
+示例 package.json（minimal-web）:
+
+```json
+{
+  "name": "asitch-minimal-web",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "serve dist -s"
+  },
+  "dependencies": {}
+}
+```
+
+将示例放到 `examples/minimal-web/` 后：
+
+```bash
+cd examples/minimal-web
+npm install
+npm run dev
+# 在浏览器打开 http://localhost:5173
+```
+
+---
+
+## 运行示例（如果仓库已包含 examples/）
+
+如果仓库自带 `examples/` 目录，请按每个示例目录下的 README 或 package.json 脚本执行。常见命令：
+
+```bash
+cd examples/<example-name>
+npm install
+npm run dev      # 或 npm run start
+```
+
+---
+
+## 开发建议
+
+- 推荐使用 ES 模块（type: "module"）并使用 Vite/Parcel/webpack 打包，方便热重载与现代语法支持。  
+- 示例资源请放在 `assets/` 或 `examples/<name>/assets/` 下，并在开发服务器中通过相对路径加载。  
+- 把常用工具脚本（如构建、资源压缩、纹理图集打包）放到 `scripts/`，并在 README 中给出使用示例。
+
+---
+
+## 贡献 & 许可证
+
+如需我把 README 更新为中英双语、添加徽章（CI、License、npm version）、或生成 `examples/minimal-web/` 的完整示例文件（包含 sprites 和 package.json），我可以直接在仓库中创建这些文件并提交（或者在新分支上发 PR）。请告诉我你希望我现在做的下一步：
+
+- A: 直接在主分支创建 `examples/minimal-web/` 完整示例并提交
+- B: 在新分支创建示例并发起 PR
+- C: 只在 README 中保留构建说明（已完成）
+
+作者: sijiyu521

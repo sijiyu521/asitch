@@ -1,0 +1,19 @@
+{
+  "name": "asitch",
+  "version": "0.1.0",
+  "description": "Asitch — lightweight 2D Canvas game engine",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  },
+  "license": "MIT"
+}
